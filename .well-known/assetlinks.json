@@ -1,0 +1,16 @@
+[
+  {
+    "relation" : [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target" : {
+      "namespace" : "android_app",
+      "package_name" : "com.bookingrequest",
+      "sha256_cert_fingerprints" : [
+        "BC:B9:51:E9:78:08:8B:54:60:28:55:3E:50:AA:6B:80:6B:F1:36:E9:E3:F3:EE:B7:83:AA:EC:5C:D9:72:A1:05",
+        "6D:C8:B6:D2:56:35:5B:23:16:9B:B3:EF:97:14:5C:03:E9:1C:65:2F:EE:C8:E8:6D:2C:1A:7A:A6:06:FE:7A:4F"
+      ]
+    }
+  }
+]
