@@ -189,6 +189,7 @@ export async function finishRegistration(user, credential) {
     );
   }
 
+  console.log("RP_ORIGINS", RP_ORIGINS);
   const verification = await verifyRegistrationResponse({
     response: credential,
     expectedChallenge: challengeRow.challenge,
