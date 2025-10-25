@@ -6,7 +6,7 @@ import {
 } from '@simplewebauthn/server';
 import { supabase } from './supabase.js';
 
-const { RP_ID, RP_NAME, RP_ORIGIN } = process.env;
+const { RP_ID, RP_NAME, RP_ORIGINS } = process.env;
 const RP_ID_HOST = (RP_ID || '').replace(/^https?:\/\//, '').replace(/\/.*/, '');
 const CREDENTIALS_TABLE = process.env.CREDENTIALS_TABLE || 'passkey_credentials';
 
@@ -155,7 +155,7 @@ export async function finishRegistration(user, credential) {
   const verification = await verifyRegistrationResponse({
     response: credential,
     expectedChallenge: challengeRow.challenge,
-    expectedOrigin: RP_ORIGIN,
+    expectedOrigin: RP_ORIGINS,
     expectedRPID: RP_ID_HOST || RP_ID,
     requireUserVerification: true,
   });
