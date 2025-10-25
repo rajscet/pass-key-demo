@@ -193,7 +193,7 @@ export async function finishRegistration(user, credential) {
   const verification = await verifyRegistrationResponse({
     response: credential,
     expectedChallenge: challengeRow.challenge,
-    expectedOrigin: RP_ORIGINS,
+    expectedOrigin: 'android:apk-key-hash:bci20lY1WyMWm7PvlxRCA-kcZS_uyOhtLBp6pgb-ek8',
     expectedRPID: RP_ID_HOST || RP_ID,
     requireUserVerification: true,
   });
