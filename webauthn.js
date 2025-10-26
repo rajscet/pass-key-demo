@@ -154,6 +154,8 @@ export async function finishRegistration(user, credential) {
     throw new Error('No saved registration challenge found; start registration again.');
   }
 
+  console.log('🔎 finishRegistration origins =', origins);
+
   const verification = await verifyRegistrationResponse({
     response: credential,
     expectedChallenge: challengeRow.challenge,

@@ -10,6 +10,8 @@ const app = express();
 app.use(express.static('public'));
 app.use(express.json({ limit: '1mb' }));
 
+
+
 app.use('/.well-known', express.static(path.join(process.cwd(), 'well-known'), { dotfiles: 'allow' }));
 
 const CORS_ORIGINS = (process.env.CORS_ORIGINS || '').split(',').filter(Boolean);
