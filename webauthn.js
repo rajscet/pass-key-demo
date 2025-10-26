@@ -8,6 +8,7 @@ import { supabase } from './supabase.js';
 
 const { RP_ID, RP_NAME, RP_ORIGINS } = process.env;
 const origins = (RP_ORIGINS || '').split(',').filter(Boolean);
+console.log('CORS_ORIGINS', origins);
 const RP_ID_HOST = (RP_ID || '').replace(/^https?:\/\//, '').replace(/\/.*/, '');
 const CREDENTIALS_TABLE = process.env.CREDENTIALS_TABLE || 'passkey_credentials';
 
