@@ -72,7 +72,10 @@ app.post('/passkey/register/finish', authMiddleware, async (req, res) => {
   try {
     const user = { id: req.user.sub, phone: req.user.phone };
     const { credential } = req.body;
+    const { RP_ID, RP_NAME, RP_ORIGINS } = process.env;
+    const origins = (RP_ORIGINS || '').split(',').filter(Boolean);
     console.log('register/finish called for userId', user.id);
+    console.log('register/finish called for origins', origins);
     const result = await finishRegistration(user, credential);
     if (!result.verified) return res.status(400).json({ error: 'Registration not verified' });
     res.json({ ok: true });
