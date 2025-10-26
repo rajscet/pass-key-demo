@@ -141,6 +141,7 @@ export async function startRegistration(user) {
 }
 
 export async function finishRegistration(user, credential) {
+  console.log('finishRegistration origins111 =', origins);
   const { data: challengeRow } = await supabase
     .from('webauthn_challenge_store')
     .select('*')
@@ -154,7 +155,7 @@ export async function finishRegistration(user, credential) {
     throw new Error('No saved registration challenge found; start registration again.');
   }
 
-  console.log('🔎 finishRegistration origins =', origins);
+  console.log('finishRegistration origins =', origins);
 
   const verification = await verifyRegistrationResponse({
     response: credential,
