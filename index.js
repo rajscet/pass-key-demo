@@ -72,10 +72,10 @@ app.post('/passkey/register/finish', authMiddleware, async (req, res) => {
   try {
     const user = { id: req.user.sub, phone: req.user.phone };
     const { credential } = req.body;
-    const { RP_ID, RP_NAME, RP_ORIGINS } = process.env;
-    const origins = (RP_ORIGINS || '').split(',').filter(Boolean);
+    // const { RP_ID, RP_NAME, RP_ORIGINS } = process.env; // Removed redundant env var lookup
+    // const origins = (RP_ORIGINS || '').split(',').filter(Boolean); // Removed redundant parsing
     console.log('register/finish called for userId', user.id);
-    console.log('register/finish called for origins', origins);
+    // console.log('register/finish called for origins', origins); // Removed redundant logging
     const result = await finishRegistration(user, credential);
     if (!result.verified) return res.status(400).json({ error: 'Registration not verified' });
     res.json({ ok: true });

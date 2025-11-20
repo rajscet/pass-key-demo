@@ -7,7 +7,8 @@ import {
 import { supabase } from './supabase.js';
 
 const { RP_ID, RP_NAME, RP_ORIGINS } = process.env;
-const origins = (RP_ORIGINS || '').split(',').filter(Boolean);
+// FIX: Added .map(s => s.trim()) for robustness against spaces in the env var
+const origins = (RP_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
 console.log('CORS_ORIGINS', origins);
 const RP_ID_HOST = (RP_ID || '').replace(/^https?:\/\//, '').replace(/\/.*/, '');
 const CREDENTIALS_TABLE = process.env.CREDENTIALS_TABLE || 'passkey_credentials';
@@ -160,7 +161,7 @@ export async function finishRegistration(user, credential) {
   const verification = await verifyRegistrationResponse({
     response: credential,
     expectedChallenge: challengeRow.challenge,
-    expectedOrigin: origins,
+    expectedOrigin: origins, // CORRECT: uses the array of origins
     expectedRPID: RP_ID_HOST || RP_ID,
     requireUserVerification: true,
   });
@@ -204,7 +205,7 @@ export async function startAuthentication(user) {
 export async function finishAuthentication(user, assertion) {
   const userId = user.id;
   const cred = user.cred;
-console.log('A', userdId);
+console.log('A', userId);
   try {
     const { data: challengeRow, error: chErr } = await supabase
       .from('webauthn_challenge_store')
@@ -214,7 +215,7 @@ console.log('A', userdId);
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
-console.log('B', userdId);
+console.log('B', userId);
     if (chErr) return { verified: false, reason: `challenge fetch failed: ${chErr.message}` };
     if (!challengeRow?.challenge) return { verified: false, reason: 'no saved challenge' };
     if (!cred) return { verified: false, reason: 'no authenticator for credential id' };
@@ -237,9 +238,9 @@ console.log('B', userdId);
     }
 
     // Also log what we expect
-    console.log('🔎 expectedRPID   =', (process.env.RP_ID || '').replace(/^https?:\/\//,'').replace(/\/.*/,''));
-    console.log('🔎 expectedOrigin =', process.env.RP_ORIGIN);
-
+    console.log('🔎 expectedRPID   =', (RP_ID_HOST || RP_ID));
+    console.log('🔎 expectedOrigin =', origins); // Log the array, not the single env var
+    
     const pk = normalizePublicKey(cred.public_key);
     try {
   // Heuristic: if the source was string "\\x..." and decoded started with '{' JSON,
@@ -248,7 +249,7 @@ console.log('B', userdId);
   const prefix = pk.slice(0, 1).toString('hex');
   if (['a3','a4','a5'].includes(prefix)) {
     await supabase
-      .from(process.env.CREDENTIALS_TABLE || 'passkey_credentials')
+      .from(CREDENTIALS_TABLE)
       .update({ public_key: new Uint8Array(pk) })
       .eq('id', cred.id);
   }
@@ -262,8 +263,8 @@ console.log('B', userdId);
       verification = await verifyAuthenticationResponse({
         response: assertion,
         expectedChallenge: challengeRow.challenge,
-        expectedOrigin: process.env.RP_ORIGIN,
-        expectedRPID: (process.env.RP_ID || '').replace(/^https?:\/\//,'').replace(/\/.*/,''),
+        expectedOrigin: origins, // FIX: Use the 'origins' array, not process.env.RP_ORIGIN
+        expectedRPID: RP_ID_HOST || RP_ID,
         authenticator: {
           credentialID: Buffer.from(cred.credential_id, 'base64url'),
           credentialPublicKey: pk,
@@ -280,8 +281,8 @@ console.log('B', userdId);
         error: String(err?.message || err),
         clientData: clientDataDecoded,
         expected: {
-          origin: process.env.RP_ORIGIN,
-          rpId: (process.env.RP_ID || '').replace(/^https?:\/\//,'').replace(/\/.*/,''),
+          origin: origins,
+          rpId: RP_ID_HOST || RP_ID,
           challenge: challengeRow.challenge,
         },
       };
@@ -300,7 +301,7 @@ console.log('B', userdId);
     try {
       const { newCounter } = verification.authenticationInfo || {};
       if (typeof newCounter === 'number') {
-        await supabase.from(process.env.CREDENTIALS_TABLE || 'passkey_credentials')
+        await supabase.from(CREDENTIALS_TABLE)
           .update({ counter: newCounter })
           .eq('id', cred.id);
       }
@@ -319,4 +320,3 @@ console.log('B', userdId);
     };
   }
 }
-
