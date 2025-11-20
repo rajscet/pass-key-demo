@@ -7,7 +7,6 @@ import {
 import { supabase } from './supabase.js';
 
 const { RP_ID, RP_NAME, RP_ORIGINS } = process.env;
-// FIX: Added .map(s => s.trim()) for robustness against spaces in the env var
 const origins = (RP_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
 console.log('CORS_ORIGINS', origins);
 const RP_ID_HOST = (RP_ID || '').replace(/^https?:\/\//, '').replace(/\/.*/, '');
@@ -161,7 +160,7 @@ export async function finishRegistration(user, credential) {
   const verification = await verifyRegistrationResponse({
     response: credential,
     expectedChallenge: challengeRow.challenge,
-    expectedOrigin: origins, // CORRECT: uses the array of origins
+    expectedOrigin: origins,
     expectedRPID: RP_ID_HOST || RP_ID,
     requireUserVerification: true,
   });
@@ -205,7 +204,7 @@ export async function startAuthentication(user) {
 export async function finishAuthentication(user, assertion) {
   const userId = user.id;
   const cred = user.cred;
-console.log('A', userId);
+console.log('A', userId); // <-- FIX: Changed 'userdId' to 'userId'
   try {
     const { data: challengeRow, error: chErr } = await supabase
       .from('webauthn_challenge_store')
@@ -215,7 +214,7 @@ console.log('A', userId);
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
-console.log('B', userId);
+console.log('B', userId); // <-- FIX: Changed 'userdId' to 'userId'
     if (chErr) return { verified: false, reason: `challenge fetch failed: ${chErr.message}` };
     if (!challengeRow?.challenge) return { verified: false, reason: 'no saved challenge' };
     if (!cred) return { verified: false, reason: 'no authenticator for credential id' };
@@ -239,7 +238,7 @@ console.log('B', userId);
 
     // Also log what we expect
     console.log('🔎 expectedRPID   =', (RP_ID_HOST || RP_ID));
-    console.log('🔎 expectedOrigin =', origins); // Log the array, not the single env var
+    console.log('🔎 expectedOrigin =', origins);
     
     const pk = normalizePublicKey(cred.public_key);
     try {
@@ -263,7 +262,7 @@ console.log('B', userId);
       verification = await verifyAuthenticationResponse({
         response: assertion,
         expectedChallenge: challengeRow.challenge,
-        expectedOrigin: origins, // FIX: Use the 'origins' array, not process.env.RP_ORIGIN
+        expectedOrigin: origins,
         expectedRPID: RP_ID_HOST || RP_ID,
         authenticator: {
           credentialID: Buffer.from(cred.credential_id, 'base64url'),
